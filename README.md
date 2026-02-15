@@ -1,1 +1,1 @@
-# VendorChain Project
+# GomyCode Hackathon
