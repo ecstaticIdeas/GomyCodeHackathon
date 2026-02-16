@@ -10,7 +10,19 @@ export class BlockchainService {
     this.signer = signer;
   }
 
-  // --- 1. TICKET OPERATIONS ---
+  // --- AUTH & ROLES ---
+
+  async getOwner() {
+    const contract = new ethers.Contract(ContractConfig.ticketAddress, TicketArtifact.abi, this.signer);
+    return await contract.owner();
+  }
+
+  async isVendor(address: string) {
+    const contract = new ethers.Contract(ContractConfig.vaultAddress, VaultArtifact.abi, this.signer);
+    return await contract.isRegisteredVendor(address);
+  }
+
+  // --- TICKET OPERATIONS ---
   
   async buyTicket(tokenURI: string) {
     const contract = new ethers.Contract(ContractConfig.ticketAddress, TicketArtifact.abi, this.signer);
@@ -32,7 +44,7 @@ export class BlockchainService {
     return balance.toString();
   }
 
-  // --- 2. VENDOR OPERATIONS ---
+  // --- VENDOR OPERATIONS ---
 
   async registerAsVendor() {
     // Only the Organizer (Owner) can register vendors.
@@ -62,7 +74,7 @@ export class BlockchainService {
       return ethers.formatEther(balance);
   }
 
-  // --- 3. HISTORY & EVENTS ---
+  // --- HISTORY & EVENTS ---
 
   async getVendorHistory(vendorAddress: string) {
     const contract = new ethers.Contract(ContractConfig.vaultAddress, VaultArtifact.abi, this.signer);
@@ -81,7 +93,11 @@ export class BlockchainService {
       amount: ethers.formatEther(log.args[1]),
       fee: ethers.formatEther(log.args[2]),
       block: log.blockNumber
+
+      
     }));
+
+    
 
     // Return newest transactions first
     return history.reverse();
