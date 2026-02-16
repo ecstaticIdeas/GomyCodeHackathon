@@ -1,58 +1,76 @@
-import { Wallet, ShoppingBag, Store } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom'
+import { useState } from 'react'
+import { Button } from '../components/ui/button'
+import { Input } from '../components/ui/input'
+import { ArrowLeft, Mail, Lock } from 'lucide-react'
+import { useWeb3 } from '../context/Web3Context'
 
-interface LoginProps {
-  connectWallet: () => void;
-}
+export default function LoginPage() {
+  const navigate = useNavigate()
+  const { connectWallet } = useWeb3()
+  const [loading, setLoading] = useState(false)
 
-export default function Login({ connectWallet }: LoginProps) {
+  // NOTE: For the Hackathon, we are bypassing Email/Pass and using Wallet
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    try {
+      await connectWallet()
+      navigate('/dashboard')
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
-    <div className="flex flex-col items-center justify-center h-screen bg-slate-900 text-white relative overflow-hidden">
-      
-      {/* Background Effects */}
-      <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-purple-900/40 via-slate-900 to-slate-900 pointer-events-none"></div>
+    <main className="min-h-screen bg-background flex items-center justify-center px-4 py-12">
+      <div className="w-full max-w-md space-y-8">
+        <Link to="/" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-8">
+          <ArrowLeft className="w-4 h-4" />
+          <span>Back to Home</span>
+        </Link>
 
-      <div className="z-10 w-full max-w-4xl px-4">
-        <div className="text-center mb-12">
-          <h1 className="text-6xl font-extrabold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500">
-            VendorChain
-          </h1>
-          <p className="text-slate-400 text-xl">
-            The Official Event Settlement Partner for <span className="text-white font-bold">TicketSasa</span>
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          
-          {/* OPTION 1: CUSTOMER */}
-          <div className="bg-slate-800/50 backdrop-blur-xl p-8 rounded-3xl border border-slate-700 hover:border-cyan-500 transition-all group cursor-pointer" onClick={connectWallet}>
-            <div className="bg-cyan-500/10 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-cyan-500/20 transition-colors">
-              <ShoppingBag className="w-8 h-8 text-cyan-400" />
-            </div>
-            <h2 className="text-2xl font-bold text-white mb-2">Event Goer</h2>
-            <p className="text-slate-400 mb-6">
-              Redirected from TicketSasa? Connect to view your tickets and pay vendors instantly.
-            </p>
-            <button className="w-full bg-cyan-600 hover:bg-cyan-500 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2">
-              <Wallet className="w-5 h-5" /> Connect Wallet
-            </button>
+        <div className="bg-card border border-border rounded-2xl p-8 space-y-6">
+          <div className="space-y-2 text-center">
+            <div className="w-12 h-12 rounded-lg bg-primary text-primary-foreground flex items-center justify-center font-bold mx-auto mb-4">V</div>
+            <h1 className="text-2xl font-bold">Welcome Back</h1>
+            <p className="text-muted-foreground">Sign in to your VendorHub account</p>
           </div>
 
-          {/* OPTION 2: VENDOR */}
-          <div className="bg-slate-800/50 backdrop-blur-xl p-8 rounded-3xl border border-slate-700 hover:border-purple-500 transition-all group cursor-pointer" onClick={connectWallet}>
-            <div className="bg-purple-500/10 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-purple-500/20 transition-colors">
-              <Store className="w-8 h-8 text-purple-400" />
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div className="space-y-2">
+              <label className="block text-sm font-medium">Email Address</label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                <Input type="email" placeholder="you@example.com" className="pl-10" />
+              </div>
             </div>
-            <h2 className="text-2xl font-bold text-white mb-2">Event Vendor</h2>
-            <p className="text-slate-400 mb-6">
-              Selling goods at the event? Register here to receive payments and track your 80% cut.
-            </p>
-            <button className="w-full bg-purple-600 hover:bg-purple-500 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2">
-              <Wallet className="w-5 h-5" /> Vendor Login / Signup
-            </button>
-          </div>
 
+            <div className="space-y-2">
+              <label className="block text-sm font-medium">Password</label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                <Input type="password" placeholder="********" className="pl-10" />
+              </div>
+            </div>
+
+            <Button type="submit" className="w-full h-11 text-base" disabled={loading}>
+              {loading ? 'Connecting...' : 'Sign In with Wallet'}
+            </Button>
+          </form>
+
+          <div className="flex gap-3">
+            <Link to="/signup/organizer" className="flex-1">
+              <Button variant="outline" className="w-full">Sign up Organizer</Button>
+            </Link>
+            <Link to="/signup/vendor" className="flex-1">
+              <Button variant="outline" className="w-full">Sign up Vendor</Button>
+            </Link>
+          </div>
         </div>
       </div>
-    </div>
-  );
+    </main>
+  )
 }
